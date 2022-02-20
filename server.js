@@ -67,8 +67,15 @@ app.delete('/delete', function(req, res){
 //디테일 페이지 조회
 app.get('/detail/:id', function(req, res){
     db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, rst){
-        console.log(rst);
-        res.render('detail.ejs',{ detail : rst});
+        if(rst == null){
+            console.log("존재하지 않는 게시물입니다.");
+            res.send("<script>alert('존재하지 않는 게시물입니다.');location.href='/list'</script>");
+        }else{
+            console.log(rst);
+            res.render('detail.ejs',{ detail : rst});
+        }
     })
 
 })
+//1. 없는 게시물 페이지 처리
+//2. 글목록 페이지에서 글 제목누르면 상세 페이지로 이동하기
