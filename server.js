@@ -4,7 +4,12 @@ const bodyParser = require('body-parser');
 const { Db } = require('mongodb');
 app.use(bodyParser.urlencoded({extended:true}));
 const MongoClient = require('mongodb').MongoClient;
+
+const methodOverride = require('method-override')
+app.use(methodOverride('_method'))
+
 app.set('view engine', 'ejs');
+app.use('/public', express.static('public'));
 
 
 MongoClient.connect('mongodb+srv://admin:3shan212406@cluster0.nuqju.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
@@ -18,11 +23,15 @@ MongoClient.connect('mongodb+srv://admin:3shan212406@cluster0.nuqju.mongodb.net/
 })
 
 app.get('/', function(req, res){
-    res.sendFile(__dirname +'/index.html')
+    // res.sendFile(__dirname +'/index.html')
+    res.render('index.ejs');
+
 })
 
 app.get('/write', function(req, res){
-    res.sendFile(__dirname + '/write.html')
+    // res.sendFile(__dirname + '/write.html')
+    res.render('write.ejs');
+
 })
 
 //게시글 추가
@@ -77,5 +86,24 @@ app.get('/detail/:id', function(req, res){
     })
 
 })
-//1. 없는 게시물 페이지 처리
-//2. 글목록 페이지에서 글 제목누르면 상세 페이지로 이동하기
+
+//게시물 수정
+app.get('/edit/:id', function(req, res){
+    db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, rst){
+        if(rst == null){
+            console.log("존재하지 않는 게시물입니다.");
+            res.send("<script>alert('존재하지 않는 게시물입니다.');location.href='/list'</script>");
+        }else{
+        console.log(rst)
+        res.render('edit.ejs', {post : rst});
+        }
+    })
+})
+
+app.put('/edit', function(req, res){
+    db.collection('post').updateOne({_id : parseInt(req.body.id)}, {$set: {제목:req.body.title, 날짜: req.body.date}}, function(err, rst){
+        console.log('수정완료')
+        res.redirect('/list')
+    })
+    
+})
