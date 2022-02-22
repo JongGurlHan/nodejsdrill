@@ -126,7 +126,24 @@ app.post('/login', passport.authenticate('local', {
     failureRedirect : '/fail'
 }), function(req, res){
     res.redirect('/')
+    console.log(req.user.id);
 });
+
+app.get('/mypage', 로그인했니, function(req, res){
+    
+    res.render('mypage.ejs')
+})
+
+
+function 로그인했니(req, res, next){
+    if(req.user){ //로그인 후 세션이 있으면 req.user가 항상있음
+        next()
+    }else{
+        res.send('로그인 안하셨는데요?')
+    }
+
+}
+
 
 //아이디 비번 인증
 passport.use(new LocalStrategy({
@@ -158,7 +175,8 @@ passport.serializeUser(function(user, done){
 
 });
 
-//이 세션 데이터를 가진 사람을 db에서 찾아주세요(마이페이지 접속시 발동)
+//로그인한 유저의 개인정보를 db에서 찾는 역할, 이 세션 데이터를 가진 사람을 db에서 찾아주세요(마이페이지 접속시 발동)
+//deserializeUser(): 로그인한 유저의 세션아이디를 바탕으로 개인정보를 DB에서 찾는 역할
 passport.deserializeUser(function(아이디, done){
     done(null, {})
 });
