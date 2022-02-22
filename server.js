@@ -1,3 +1,4 @@
+
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -8,23 +9,25 @@ const MongoClient = require('mongodb').MongoClient;
 const methodOverride = require('method-override')
 app.use(methodOverride('_method'))
 
+require("dotenv").config();
+
+
 app.set('view engine', 'ejs');
 app.use('/public', express.static('public'));
 
 
-MongoClient.connect('mongodb+srv://admin:3shan212406@cluster0.nuqju.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
-, function(err, client){
+MongoClient.connect(process.env.DB_URL, function(err, client){
     if(err) return console.log(err)
     db = client.db('todoapp');    
 
-    app.listen(8070, function(){
+    app.listen(process.env.PORT, function(){
         console.log('listening on 8070')
     });
 })
 
 app.get('/', function(req, res){
     // res.sendFile(__dirname +'/index.html')
-    res.render('index.ejs');
+    res.render('index.ejs', {user : req.user});
 
 })
 
@@ -58,7 +61,7 @@ app.get('/list', function(req, res){
 
     db.collection('post').find().toArray(function(err, rst){
         console.log(rst)
-        res.render('list.ejs', {posts : rst});
+        res.render('list.ejs', {posts : rst}, );
     });
 })
 
@@ -126,12 +129,12 @@ app.post('/login', passport.authenticate('local', {
     failureRedirect : '/fail'
 }), function(req, res){
     res.redirect('/')
-    console.log(req.user.id);
 });
 
+
 app.get('/mypage', 로그인했니, function(req, res){
-    
-    res.render('mypage.ejs')
+    console.log(req.user);    //deserializeUser해서 찾았던 db정보
+    res.render('mypage.ejs', {user : req.user})
 })
 
 
@@ -178,5 +181,10 @@ passport.serializeUser(function(user, done){
 //로그인한 유저의 개인정보를 db에서 찾는 역할, 이 세션 데이터를 가진 사람을 db에서 찾아주세요(마이페이지 접속시 발동)
 //deserializeUser(): 로그인한 유저의 세션아이디를 바탕으로 개인정보를 DB에서 찾는 역할
 passport.deserializeUser(function(아이디, done){
-    done(null, {})
+    //디비에서 user.id로 유저를 찾은 뒤에 유저 정보(id, pw, etc..)를 아래 null 다음에 넣음
+    db.collection('login').findOne({id : 아이디}, function(err, rst){
+        // console.log("아이디:" + 아이디);
+        done(null, rst)
+
+    })
 });
