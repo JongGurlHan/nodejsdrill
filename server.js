@@ -37,24 +37,6 @@ app.get('/write', function(req, res){
 
 })
 
-//게시글 추가
-app.post('/add', function(req, res){
-    res.send('전송완료');
-
-    db.collection('counter').findOne({name :'게시물갯수'}, function(err, rst){
-        //console.log(rst.totalPost)
-        var totalPost = rst.totalPost;
-
-        db.collection('post').insertOne({_id : totalPost + 1, 제목 :req.body.title, 날짜 : req.body.date}, function(err, rst){
-            console.log('저장완료')
-        });
-
-        //operator { $set : {totalPost:바꿀값}} / { $set : {totalPost:기존값에 더해줄값}}
-        db.collection('counter').updateOne({name :'게시물갯수'},{ $inc : {totalPost:1 }}, function(err, rst){
-            if(err){return console.log(err)}
-        });
-    }); 
-})
 
 //게시글 조회
 app.get('/list', function(req, res){
@@ -90,16 +72,6 @@ app.get('/search', (req, res) => {
     })
 })
 
-app.delete('/delete', function(req, res){
-    //요청.body에 담겨온 게시물 번호를 가진 글을 db에서 찾아서 삭제해주세요
-    console.log(req.body);
-    req.body._id = parseInt(req.body._id);
-    db.collection('post').deleteOne(req.body, function(err, rst){
-        console.log('삭제완료');
-        // res.status(400).send({message: '실패했습니다.'});
-        res.status(200).send({message: '성공했습니다.'});
-    })
-})
 
 //디테일 페이지 조회
 app.get('/detail/:id', function(req, res){
@@ -213,3 +185,48 @@ passport.deserializeUser(function(아이디, done){
 
     })
 });
+
+//회원가입
+app.post('/register', function (req, res) {
+    db.collection('login').insertOne({ id: req.body.id, pw: req.body.pw }, function (err, rst) {
+        res.redirect('/')
+    })
+  })
+
+//게시글 추가
+app.post('/add', function(req, res){
+    res.send('전송완료');
+
+    db.collection('counter').findOne({name :'게시물갯수'}, function(err, rst){
+        //console.log(rst.totalPost)
+        var totalPost = rst.totalPost;
+
+        var 저장할거 = {_id : totalPost + 1, 제목 :req.body.title, 날짜 : req.body.date, 작성자 : req.user._id}
+
+        db.collection('post').insertOne({저장할거}, function(err, rst){
+            console.log('저장완료')
+        });
+
+        //operator { $set : {totalPost:바꿀값}} / { $set : {totalPost:기존값에 더해줄값}}
+        db.collection('counter').updateOne({name :'게시물갯수'},{ $inc : {totalPost:1 }}, function(err, rst){
+            if(err){return console.log(err)}
+        });
+    }); 
+})
+//할거: 본인이 작성한 게시물만 삭제버튼 보이게 하기
+app.delete('/delete', function(req, res){
+    //요청.body에 담겨온 게시물 번호를 가진 글을 db에서 찾아서 삭제해주세요
+    console.log(req.body);
+    req.body._id = parseInt(req.body._id);
+
+    var 삭제할데이터 = {_id : req.body._id, 작성자 : req.user._id} //둘다 만족하는 게시물 찾아서 지워줌
+
+    db.collection('post').deleteOne(삭제할데이터, function(err, rst){
+        console.log('삭제완료');
+        // res.status(400).send({message: '실패했습니다.'});
+        if(rst){console.log(rst)}
+        res.status(200).send({message: '성공했습니다.'});
+    })
+})
+
+app.use('/board/sub', require('./routes/board.js')); // ./ :현재경로 (nodejs의 국룰)
