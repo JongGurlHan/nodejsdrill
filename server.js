@@ -25,16 +25,13 @@ MongoClient.connect(process.env.DB_URL, function(err, client){
     });
 })
 
-app.get('/', function(req, res){
-    // res.sendFile(__dirname +'/index.html')
+app.get('/', function(req, res){   
     res.render('index.ejs');
-
 })
 
 app.get('/write', function(req, res){
     // res.sendFile(__dirname + '/write.html')
     res.render('write.ejs');
-
 })
 
 
@@ -108,6 +105,7 @@ app.put('/edit', function(req, res){
     
 })
 
+
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
@@ -118,6 +116,7 @@ app.use(passport.session());
 
 
 app.get('/login', function(req, res){
+    
     res.render('login.ejs')
 });
 
@@ -186,11 +185,29 @@ passport.deserializeUser(function(아이디, done){
     })
 });
 
+app.get('/register', function(req, res){
+    res.render('register.ejs')
+})
+
 //회원가입
 app.post('/register', function (req, res) {
-    db.collection('login').insertOne({ id: req.body.id, pw: req.body.pw }, function (err, rst) {
-        res.redirect('/')
+    //만약 가입하려는 아이디가 db에 있는 아이디와 같다면
+    //alert으로 이미 존재하는 아이디입니다. 
+
+    db.collection('login').findOne({id:req.body.id}, function(err, rst){
+        var isId = rst.id
+        if(isId){
+            res.send(
+                "<script>alert('이미 존재하는 아이디입니다.');location.href='/register'</script>");
+            }else{
+            db.collection('login').insertOne({ id: req.body.id, pw: req.body.pw }, function (err, rst) {
+                res.redirect('/')
+            })
+        }
     })
+
+   
+    
   })
 
 //게시글 추가
