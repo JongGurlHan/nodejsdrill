@@ -9,8 +9,9 @@ const MongoClient = require('mongodb').MongoClient;
 const methodOverride = require('method-override')
 app.use(methodOverride('_method'))
 
-require("dotenv").config();
+const {check, validationResult} = require('express-validator')
 
+require("dotenv").config();
 
 app.set('view engine', 'ejs');
 app.use('/public', express.static('public'));
@@ -190,23 +191,38 @@ app.get('/register', function(req, res){
 })
 
 //회원가입
-app.post('/register', function (req, res) {
-    //만약 가입하려는 아이디가 db에 있는 아이디와 같다면
-    //alert으로 이미 존재하는 아이디입니다. 
+app.post('/register', [
+
+    check('id', '아이디는 3글자 이상이어야합니다.')
+    .exists()
+    .isLength({min: 3 })
+
+
+
+    ],(req, res) =>{
+
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){
+            // return res.status(422).jsonp(errors.array())
+            const alert = errors.array()
+            res.render('register', {alert})
+        }
+
 
     db.collection('login').findOne({id:req.body.id}, function(err, rst){
-        var isId = rst.id
-        if(isId){
-            res.send(
-                "<script>alert('이미 존재하는 아이디입니다.');location.href='/register'</script>");
-            }else{
+        console.log(rst); //db에서 찾은 계정정보
+        //입력한 값         
+        if(rst){ 
+            if(rst.id == req.body.id){
+                res.send(
+                    "<script>alert('이미 존재하는 아이디입니다.');location.href='/register'</script>");   
+            }
+        }else{
             db.collection('login').insertOne({ id: req.body.id, pw: req.body.pw }, function (err, rst) {
                 res.redirect('/')
-            })
-        }
-    })
-
-   
+            })            
+         }            
+    })   
     
   })
 
