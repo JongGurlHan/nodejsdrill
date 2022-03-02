@@ -30,20 +30,8 @@ app.get('/', function(req, res){
     res.render('index.ejs');
 })
 
-app.get('/write', function(req, res){
-    // res.sendFile(__dirname + '/write.html')
-    res.render('write.ejs');
-})
 
 
-//게시글 조회
-app.get('/list', function(req, res){
-
-    db.collection('post').find().toArray(function(err, rst){
-        console.log(rst)
-        res.render('list.ejs', {posts : rst}, );
-    });
-})
 
 //특정 게시물 조회
 app.get('/search', (req, res) => {
@@ -86,25 +74,8 @@ app.get('/detail/:id', function(req, res){
 })
 
 //게시물 수정
-app.get('/edit/:id', function(req, res){
-    db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, rst){
-        if(rst == null){
-            console.log("존재하지 않는 게시물입니다.");
-            res.send("<script>alert('존재하지 않는 게시물입니다.');location.href='/list'</script>");
-        }else{
-        console.log(rst)
-        res.render('edit.ejs', {post : rst});
-        }
-    })
-})
+app.use('/', require('./routes/edit.js') );
 
-app.put('/edit', function(req, res){
-    db.collection('post').updateOne({_id : parseInt(req.body.id)}, {$set: {제목:req.body.title, 날짜: req.body.date}}, function(err, rst){
-        console.log('수정완료')
-        res.redirect('/list')
-    })
-    
-})
 
 
 const passport = require('passport');
@@ -121,7 +92,7 @@ app.get('/login', function(req, res){
     res.render('login.ejs')
 });
 
-//1. 누가 로그인하면 locall 방식으로 아이디, 비번 인증
+//1. 누가 로그인하면 local 방식으로 아이디, 비번 인증
 app.post('/login', passport.authenticate('local', {
     failureRedirect : '/fail'
 }), function(req, res){
@@ -139,7 +110,7 @@ function 로그인했니(req, res, next){
     if(req.user){ //로그인 후 세션이 있으면 req.user가 항상있음
         next()
     }else{
-        res.send('로그인 안하셨는데요?')
+        res.send("<script>alert('로그인해주세요!.');location.href='/login'</script>");
     }
 
 }
@@ -186,6 +157,30 @@ passport.deserializeUser(function(아이디, done){
     })
 });
 
+
+//게시글 조회
+app.get('/list', function(req, res){
+
+    //로그인했다면
+    if(req.user){
+        db.collection('post').find().toArray(function(err, rst){
+            console.log(rst)
+            console.log("로그인함")
+    
+            res.render('list.ejs', {posts : rst, loginUser : req.user.id});
+        });        
+    }else{
+        db.collection('post').find().toArray(function(err, rst){
+            console.log(rst)
+            console.log("로그인 안함")
+    
+            res.render('list.ejs', {posts : rst});
+        });  
+
+    }
+
+})
+
 app.get('/register', function(req, res){
     res.render('register.ejs')
 })
@@ -196,8 +191,6 @@ app.post('/register', [
     check('id', '아이디는 3글자 이상이어야합니다.')
     .exists()
     .isLength({min: 3 })
-
-
 
     ],(req, res) =>{
 
@@ -225,8 +218,13 @@ app.post('/register', [
     })   
     
   })
+//글작성 페이지 이동
+  app.get('/write', 로그인했니, function(req, res){    
+    res.render('write.ejs' ,{loginUser : req.user.id});
+})
 
-//게시글 추가
+
+//글작성
 app.post('/add', function(req, res){
     res.send('전송완료');
 
@@ -234,9 +232,8 @@ app.post('/add', function(req, res){
         //console.log(rst.totalPost)
         var totalPost = rst.totalPost;
 
-        var 저장할거 = {_id : totalPost + 1, 제목 :req.body.title, 날짜 : req.body.date, 작성자 : req.user._id}
 
-        db.collection('post').insertOne({저장할거}, function(err, rst){
+        db.collection('post').insertOne({_id : totalPost + 1, 제목 :req.body.title, 날짜 : req.body.date, 작성자 : req.user.id}, function(err, rst){
             console.log('저장완료')
         });
 

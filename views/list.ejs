@@ -19,6 +19,13 @@
 
     
     <h4 class="ml-2 my-3 text-center">할일 리스트</h4>
+    
+    <% if(locals.loginUser){ %>
+      <h5 class="ml-2 my-3 text-center"><%= loginUser %>님 이 로그인했습니다.</h5>
+    <% } %>
+
+   
+
 
     <div class="container input-group mb-2">
       <input class="form-control" id="search-input">
@@ -32,14 +39,20 @@
       })
     </script>  
 
+
+
     <div class="container">
       <ul class="list-group">
         <% for(var i =0; i< posts.length; i++){ %>
         <li class="list-group-item" >
           <p>글번호:  <%= posts[i]._id %></p>
-          <h4>할일 제목 : <%= posts[i].제목 %></h4>
+          <h5><a href="/detail/<%= posts[i]._id %>" >할일 : <%= posts[i].제목 %></a></h5>
+          <p>작성자: <%= posts[i].작성자 %></p>
           <p>할일 날짜 : <%= posts[i].날짜 %></p>
-          <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
+          
+          <!-- 지금 로그인한 계정의 아이디와 글 작성자의 아이디가 같으면 노출 -->
+            <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
+
         </li>      
         <% } %>
       </ul>      

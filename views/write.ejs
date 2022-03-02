@@ -17,6 +17,10 @@
 
       <h4 class="container mt-4"><strong>글 작성페이지</strong></h4>
 
+      <% if(locals.loginUser){ %>
+        <h5 class="ml-2 my-3 text-center"><%= loginUser %>님 이 로그인했습니다.</h5>
+      <% } %>
+
       <div class="container mt-3">
         <form action="/add" method="POST">
           <div class="form-group">
