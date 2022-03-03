@@ -12,6 +12,8 @@
     <title>Hello, world!</title>
   </head>
   <body>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+
     <%- include('nav.ejs') %>
   
 
@@ -20,13 +22,31 @@
   
       <div class="card" style="width: 100%;">
         <div class="card-body">
+          <h6>글번호:<%= detail._id %></h6>
           <h5 class="card-title">제목: <%= detail.제목 %></h5>
           <h6 class="card-subtitle mb-2 text-muted">날짜: <%= detail.날짜 %></h6>
           <a href="/edit/<%= detail._id %>" class="card-link">수정하기</a>
+          <button class="btn btn-danger delete" data-id="<%= detail._id %>">삭제</button>
+
         </div>
       </div>
 
     </div>
+    <script>
+
+    $('.delete').click(function(e){
+        var 글번호 = e.target.dataset.id;// e.target:내가 누른요소, dataset.id: data-id
+        var 지금누른거 =$(this);
+        
+      $.ajax({
+        method: 'DELETE',
+        url : '/delete', //서버에 새로고침 없이 /delete 경로로 DELETE 요청을할거에요
+        data: {_id : 글번호}
+      }).done(function(rst){
+
+      });
+    })
+    </script>
     
     
 

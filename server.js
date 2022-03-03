@@ -88,9 +88,9 @@ app.delete('/delete', function(req, res){
     console.log(req.body);
     req.body._id = parseInt(req.body._id);
 
-    var 삭제할데이터 = {_id : req.body._id, 작성자 : req.user._id} //둘다 만족하는 게시물 찾아서 지워줌
-
-    db.collection('post').deleteOne(삭제할데이터, function(err, rst){
+    var deleteData = {_id : req.body._id, 작성자 : req.user.id} //둘다 가지고 있는게시물 찾아서 지워줌
+                    //왼쪽: 삭제버튼 눌렀을때 넘어오는 게시물의 _id
+    db.collection('post').deleteOne(deleteData , function(err, rst){
         console.log('삭제완료');
         // res.status(400).send({message: '실패했습니다.'});
         if(rst){console.log(rst)}
