@@ -49,7 +49,10 @@
           <p>할일 날짜 : <%= posts[i].날짜 %></p>
           
           <!-- 지금 로그인한 계정의 아이디와 글 작성자의 아이디가 같으면 노출 -->
+          <% if(posts[i].작성자 == locals.loginUser ){ %>
             <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
+
+          <% } %>
 
         </li>      
         <% } %>
