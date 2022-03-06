@@ -63,6 +63,13 @@ function 로그인했니(req, res, next){
 
 }
 
+//로그아웃
+app.get('/logout', function(req, res){
+    req.session.destroy(function(err){
+        res.redirect('/')
+    });
+})
+
 //== mypage 이동==
 app.get('/mypage', 로그인했니, function(req, res){
     console.log(req.user);    //deserializeUser해서 찾았던 db정보
