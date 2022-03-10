@@ -1,5 +1,5 @@
 var router = require('express').Router();
-const {check, validationResult} = require('express-validator')
+const {body, validationResult} = require('express-validator')
 
 
 router.get('/register', function(req, res){
@@ -7,21 +7,20 @@ router.get('/register', function(req, res){
 })
 
 //회원가입
-router.post('/register', [
+//https://express-validator.github.io/docs/index.html
+router.post('/register', 
+    body('id').isLength({min:3}),
 
-    check('id', '아이디는 3글자 이상이어야합니다.')
-    .exists()
-    .isLength({min: 3 })
+    (req, res) =>{
 
-    ],(req, res) =>{
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-        const errors = validationResult(req)
-        if(!errors.isEmpty()){
-            // return res.status(422).jsonp(errors.array())
-            const alert = errors.array()
-            res.render('register', {alert})
-        }
+    
 
+      
 
     db.collection('login').findOne({id:req.body.id}, function(err, rst){
         console.log(rst); //db에서 찾은 계정정보
